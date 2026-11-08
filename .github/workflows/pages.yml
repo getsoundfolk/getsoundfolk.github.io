@@ -5,6 +5,7 @@
 #   - every day, after soundfolk-stations' own daily build, so that a list published there gets
 #     its page here (soundfolk docs/16-sharing.md §5.4), and the latest release its download;
 #   - by hand (Actions › Pages › Run workflow), say right after a release.
+# On a pull request it only builds: the check that main requires before merging.
 # The workflow writes nothing to the repository: what it must remember from one build to the next
 # (the lists ever built) is published with the site and read back from it.
 name: Pages
@@ -12,6 +13,7 @@ name: Pages
 on:
   push:
     branches: [main]
+  pull_request:
   schedule:
     - cron: "41 5 * * *" # every day, 05:41 UTC
   workflow_dispatch:
@@ -20,7 +22,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: pages
+  group: pages-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
   cancel-in-progress: false
 
 jobs:
@@ -57,6 +59,7 @@ jobs:
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pages: write # publish the site
