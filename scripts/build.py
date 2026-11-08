@@ -39,7 +39,6 @@ MIRRORS = [
     "https://all.api.radio-browser.info",
     "https://de1.api.radio-browser.info",
     "https://de2.api.radio-browser.info",
-    "https://fi1.api.radio-browser.info",
 ]
 USER_AGENT = "SoundfolkSite/1 (+https://github.com/getsoundfolk/getsoundfolk.github.io)"
 LIST_ID = re.compile(r"^[a-z0-9-]{1,64}$")
@@ -63,14 +62,14 @@ def stations_by_uuid(uuids: list[str]) -> dict[str, dict]:
     if not uuids:
         return {}
     query = "/json/stations/byuuid?" + urllib.parse.urlencode({"uuids": ",".join(uuids)})
-    error: Exception | None = None
+    errors: list[str] = []
     for mirror in MIRRORS:
         try:
             found = get_json(mirror + query)
             return {str(s.get("stationuuid", "")).lower(): s for s in found}
         except Exception as exc:  # noqa: BLE001 - the next mirror is tried
-            error = exc
-    raise RuntimeError(f"Radio-Browser does not answer: {error}")
+            errors.append(f"{mirror}: {exc}")
+    raise RuntimeError("Radio-Browser does not answer:\n  " + "\n  ".join(errors))
 
 
 def latest_release() -> dict | None:
@@ -240,7 +239,7 @@ def station_page() -> str:
 
 
 def list_main(
-    *, kicker: str, title: str, description: str, meta: str, rows: str, missing: str
+    *, kicker: str, title: str, description: str, meta_html: str, rows: str, missing: str
 ) -> str:
     def shown(text: str) -> str:
         return "" if text else " hidden"
@@ -250,7 +249,7 @@ def list_main(
         <p class="kicker" id="kicker">{e(kicker)}</p>
         <h1 id="title">{e(title)}</h1>
         <p class="description" id="description"{shown(description)}>{e(description)}</p>
-        <p class="meta" id="meta"{shown(meta)}>{e(meta)}</p>
+        <p class="meta" id="meta"{shown(meta_html)}>{meta_html}</p>
         <p class="note" id="note" hidden></p>
 {ACTIONS.format(listen="")}
         <ol class="stations" id="stations">
@@ -262,7 +261,9 @@ def list_main(
 
 
 def list_link_page() -> str:
-    main = list_main(kicker="List", title="Loading…", description="", meta="", rows="", missing="")
+    main = list_main(
+        kicker="List", title="Loading…", description="", meta_html="", rows="", missing=""
+    )
     return page(
         title="A list on Soundfolk",
         main=main,
@@ -273,6 +274,15 @@ def list_link_page() -> str:
 
 def curators_text(curators: list[str]) -> str:
     return "by " + ", ".join(f"@{c}" for c in curators) if curators else ""
+
+
+def curators_html(curators: list[str]) -> str:
+    """"by @a, @b", each login a link to its GitHub profile."""
+    links = (
+        f'<a href="https://github.com/{e(urllib.parse.quote(c))}" rel="noopener">@{e(c)}</a>'
+        for c in curators
+    )
+    return "by " + ", ".join(links) if curators else ""
 
 
 def published_list_page(lst: dict, stations: dict[str, dict]) -> str:
@@ -305,7 +315,7 @@ def published_list_page(lst: dict, stations: dict[str, dict]) -> str:
         kicker="List",
         title=lst["title"],
         description=lst.get("description", ""),
-        meta=by,
+        meta_html=curators_html(lst.get("curators", [])),
         rows="\n".join(rows),
         missing=missing_text,
     )
