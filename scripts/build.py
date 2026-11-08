@@ -39,7 +39,6 @@ MIRRORS = [
     "https://all.api.radio-browser.info",
     "https://de1.api.radio-browser.info",
     "https://de2.api.radio-browser.info",
-    "https://fi1.api.radio-browser.info",
 ]
 USER_AGENT = "SoundfolkSite/1 (+https://github.com/getsoundfolk/getsoundfolk.github.io)"
 LIST_ID = re.compile(r"^[a-z0-9-]{1,64}$")
@@ -63,14 +62,14 @@ def stations_by_uuid(uuids: list[str]) -> dict[str, dict]:
     if not uuids:
         return {}
     query = "/json/stations/byuuid?" + urllib.parse.urlencode({"uuids": ",".join(uuids)})
-    error: Exception | None = None
+    errors: list[str] = []
     for mirror in MIRRORS:
         try:
             found = get_json(mirror + query)
             return {str(s.get("stationuuid", "")).lower(): s for s in found}
         except Exception as exc:  # noqa: BLE001 - the next mirror is tried
-            error = exc
-    raise RuntimeError(f"Radio-Browser does not answer: {error}")
+            errors.append(f"{mirror}: {exc}")
+    raise RuntimeError("Radio-Browser does not answer:\n  " + "\n  ".join(errors))
 
 
 def latest_release() -> dict | None:
