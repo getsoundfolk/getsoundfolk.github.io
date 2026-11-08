@@ -42,6 +42,17 @@ function row(name, sub, stream) {
   );
 }
 
+/** "by @a, @b", each login a link to its GitHub profile. */
+function showCurators(curators) {
+  const meta = $('meta');
+  const parts = (curators ?? []).flatMap((c, i) => [
+    i ? ', ' : 'by ',
+    el('a', { href: `https://github.com/${encodeURIComponent(c)}`, rel: 'noopener' }, `@${c}`),
+  ]);
+  meta.replaceChildren(...parts);
+  meta.hidden = !parts.length;
+}
+
 function failed(title, text) {
   $('kicker').textContent = 'Soundfolk link';
   $('title').textContent = title;
@@ -100,10 +111,7 @@ async function showPublished(id) {
   $('title').textContent = list.title;
   document.title = `${list.title} · Soundfolk`;
   setText($('description'), list.description);
-  setText(
-    $('meta'),
-    list.curators?.length ? `by ${list.curators.map((c) => `@${c}`).join(', ')}` : '',
-  );
+  showCurators(list.curators);
   try {
     const { rows, missing } = await catalogRows(list.items.map((i) => i.uuid));
     $('stations').replaceChildren(...rows);
