@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: MPL-2.0
+#
+# Builds the site and publishes it on GitHub Pages:
+#   - on every push to main;
+#   - every day, after soundfolk-stations' own daily build, so that a list published there gets
+#     its page here (soundfolk docs/16-sharing.md §5.4), and the latest release its download;
+#   - by hand (Actions › Pages › Run workflow), say right after a release.
+# The workflow writes nothing to the repository: what it must remember from one build to the next
+# (the lists ever built) is published with the site and read back from it.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "41 5 * * *" # every day, 05:41 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to commit SHAs rather than mutable tags.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install the build's dependencies
+        run: |
+          sudo apt-get install -y --no-install-recommends fonts-dejavu-core
+          python3 -m pip install --disable-pip-version-check pillow==12.1.1
+
+      - name: Test the link parser
+        run: node --test scripts/test_link.mjs
+
+      - name: Build the site
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # reads the latest app release, nothing else
+        run: python3 scripts/build.py -o _site
+
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write # publish the site
+      id-token: write # prove to Pages where the build comes from
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

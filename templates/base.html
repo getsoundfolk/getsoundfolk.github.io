@@ -1,0 +1,43 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- Written by scripts/build.py from templates/base.html: edit those, not this file. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self' https://*.api.radio-browser.info; media-src https:; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <title>$title</title>
+    <meta name="description" content="$description" />
+    <meta property="og:site_name" content="Soundfolk" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="$og_title" />
+    <meta property="og:description" content="$description" />
+    <meta property="og:image" content="$og_image" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="$og_title" />
+    <meta name="twitter:card" content="summary_large_image" />
+    $canonical
+    <link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/assets/site.css" />
+    $script
+  </head>
+  <body$body_attrs>
+    <header class="top">
+      <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="28" height="28" />Soundfolk</a>
+    </header>
+    <main>
+$main
+    </main>
+    <footer class="foot">
+      <p>
+        Soundfolk is free software: <a href="https://github.com/getsoundfolk/soundfolk">source</a>.
+        No cookies, no tracking. Stations from <a href="https://www.radio-browser.info">Radio-Browser</a>.
+      </p>
+    </footer>
+  </body>
+</html>

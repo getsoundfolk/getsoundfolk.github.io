@@ -1,0 +1,317 @@
+/* SPDX-License-Identifier: MPL-2.0 */
+/* The app's colors (soundfolk src/app.css): dark by default, light when the system asks. Buttons
+   take #c2410c, which carries white text at 5.2:1. */
+:root {
+  color-scheme: dark;
+  --bg: #121213;
+  --surface: #19191b;
+  --surface-high: #232325;
+  --border: rgb(237 237 237 / 0.11);
+  --border-control: rgb(237 237 237 / 0.2);
+  --text: #ededed;
+  --text-soft: #c2c2c6;
+  --text-muted: #a1a1a6;
+  --accent: #c2410c;
+  --accent-hover: #cc4a0e;
+  --accent-text: #f97316;
+  --on-accent: #fff;
+  --warning-bg: #262014;
+  --warning-border: #46381c;
+  --radius: 0.625rem;
+  --gutter: 1rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f6f8fa;
+    --surface: #ffffff;
+    --surface-high: #eef0f3;
+    --border: rgb(17 24 39 / 0.13);
+    --border-control: rgb(17 24 39 / 0.23);
+    --text: #111827;
+    --text-soft: #374151;
+    --text-muted: #4b5563;
+    --accent: #c2410c;
+    --accent-hover: #9a3412;
+    --accent-text: #c2410c;
+    --warning-bg: #fff8e6;
+    --warning-border: #f0d9a0;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font:
+    400 1rem/1.5 system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    Ubuntu,
+    Cantarell,
+    'Noto Sans',
+    sans-serif;
+}
+
+a {
+  color: var(--accent-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.top,
+main,
+.foot {
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.top {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.brand img {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.375rem;
+}
+
+main {
+  flex: 1;
+  padding-bottom: 2.5rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  padding: 1.5rem;
+}
+
+.kicker {
+  margin: 0 0 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.meta,
+.note,
+.muted {
+  color: var(--text-muted);
+}
+
+.meta {
+  margin: 0.375rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.description {
+  margin: 0.75rem 0 0;
+  color: var(--text-soft);
+}
+
+.note {
+  margin: 0.75rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.note strong {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius);
+  background: var(--surface-high);
+  color: var(--text);
+  font: inherit;
+  font-weight: 550;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  border-color: var(--text-muted);
+}
+
+.button.primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.button.primary:hover {
+  background: var(--accent-hover);
+}
+
+/* Listen and Stop, Copy link and Link copied take the same room: nothing moves when pressed. */
+.button.listen {
+  min-width: 7rem;
+}
+
+.button.copy {
+  min-width: 8.5rem;
+}
+
+.hint {
+  margin: 0.75rem 0 0;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius);
+  background: var(--warning-bg);
+  font-size: 0.9375rem;
+}
+
+.small {
+  font-size: 0.875rem;
+}
+
+.stations {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.stations li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stations .name {
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+
+.stations .sub {
+  grid-column: 1;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.stations .button,
+.stations .muted {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.stations .button {
+  min-height: 2.25rem;
+  min-width: 5.5rem;
+  padding: 0 0.75rem;
+}
+
+.stations .muted {
+  font-size: 0.8125rem;
+  text-align: right;
+  max-width: 9rem;
+}
+
+.get {
+  margin-top: 1.5rem;
+}
+
+.get p {
+  margin: 0 0 0.5rem;
+}
+
+code {
+  font-family: ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace;
+  font-size: 0.875em;
+  overflow-wrap: anywhere;
+}
+
+pre {
+  margin: 0.5rem 0;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-high);
+  overflow-x: auto;
+}
+
+.foot {
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.foot p {
+  margin: 0;
+}
+
+@media (max-width: 30rem) {
+  .card {
+    padding: 1.125rem;
+  }
+
+  .actions .button {
+    flex: 1 1 auto;
+  }
+}
