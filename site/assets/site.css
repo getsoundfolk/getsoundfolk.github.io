@@ -91,8 +91,31 @@ main,
 }
 
 .top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
   padding-top: 1.25rem;
   padding-bottom: 1.25rem;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  font-size: 0.9375rem;
+}
+
+.nav a {
+  color: var(--text-soft);
+  text-decoration: none;
+}
+
+.nav a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .brand {
@@ -306,7 +329,240 @@ pre {
   margin: 0;
 }
 
+/* ── Presentation pages (home, download, privacy, contribute) ─────────────── */
+
+body.wide .top,
+body.wide main,
+body.wide .foot {
+  max-width: 68rem;
+}
+
+body.wide main > * + * {
+  margin-top: 1.5rem;
+}
+
+.lead {
+  margin: 1rem 0 0;
+  color: var(--text-soft);
+  font-size: 1.125rem;
+  max-width: 40rem;
+}
+
+.center {
+  text-align: center;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+  align-items: center;
+  gap: 2.5rem;
+  padding: 2rem 0 1.5rem;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  letter-spacing: -0.01em;
+}
+
+.hero .actions {
+  margin-top: 1.5rem;
+}
+
+.hero .muted {
+  margin: 0.75rem 0 0;
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  background: var(--surface);
+}
+
+.features {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.feature {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+  align-items: center;
+  gap: 2.5rem;
+  padding: 2rem 0;
+  border-top: 1px solid var(--border);
+}
+
+/* The screenshots are of the app's own window, 480 px wide: portrait, never stretched. */
+.feature:nth-child(even) {
+  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+}
+
+.feature:nth-child(even) .feature-text {
+  order: 2;
+}
+
+.shot {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  justify-self: center;
+}
+
+.feature h2,
+.more h2 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+.feature p {
+  margin: 0.75rem 0 0;
+  color: var(--text-soft);
+}
+
+.feature strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.more {
+  padding: 2rem 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.grid li {
+  padding: 1.125rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  background: var(--surface);
+}
+
+.grid h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.grid p {
+  margin: 0.375rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.split p,
+.prose p {
+  margin: 0.5rem 0 0;
+  color: var(--text-soft);
+}
+
+.page-head {
+  padding: 1.5rem 0 0.5rem;
+}
+
+.prose {
+  max-width: 48rem;
+}
+
+.prose h2 + p {
+  margin-top: 0;
+}
+
+.platforms {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.platform h2 {
+  margin: 0;
+}
+
+.platform .muted {
+  margin: 0.25rem 0 0;
+  font-size: 0.9375rem;
+}
+
+.platform .actions {
+  margin: 1rem 0 0.75rem;
+}
+
+.platform p.small {
+  margin: 0.5rem 0 0;
+}
+
+.facts {
+  margin: 0.75rem 0 0;
+}
+
+.facts dt {
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.facts dd {
+  margin: 0.25rem 0 0;
+  color: var(--text-soft);
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 0.375rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--border-control);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 550;
+  vertical-align: 0.125em;
+}
+
+@media (max-width: 52rem) {
+  .hero,
+  .feature {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .feature:nth-child(even) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .feature:nth-child(even) .feature-text {
+    order: 0;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .split,
+  .platforms {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 30rem) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .card {
     padding: 1.125rem;
   }

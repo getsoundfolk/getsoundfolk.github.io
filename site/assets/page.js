@@ -166,66 +166,102 @@ export function setUpActions() {
 
 // ── Get Soundfolk ───────────────────────────────────────────────────────────
 
-const RELEASES = 'https://github.com/getsoundfolk/soundfolk/releases/latest';
-
-/** Fills the Get Soundfolk section for the visitor's system (§5.3). The latest release is
- *  written by the site's build in /release.json: the page asks nothing of GitHub's API. */
-export async function setUpGet() {
-  const box = $('get-body');
+/** The visitor's system, as far as the user agent tells: one of the release's packages, `mobile`
+ *  or null. */
+function system() {
   const ua = navigator.userAgent;
-  const mobile =
-    /Android|iPhone|iPad|iPod/i.test(ua) || (navigator.maxTouchPoints > 1 && /Mac/.test(ua));
-  const linux = /Linux|X11/.test(ua) && !/Android/i.test(ua);
-  if (!linux) {
+  if (/Android|iPhone|iPad|iPod/i.test(ua) || (navigator.maxTouchPoints > 1 && /Mac/.test(ua)))
+    return 'mobile';
+  if (/Windows/.test(ua)) return 'exe';
+  if (/Mac OS X|Macintosh/.test(ua)) return 'dmg';
+  if (/Linux|X11/.test(ua)) return 'deb';
+  return null;
+}
+
+const PACKAGE = {
+  deb: {
+    anchor: 'linux',
+    label: 'for Linux',
+    file: '.deb',
+    install: 'Open the file to install it, or: ',
+  },
+  exe: { anchor: 'windows', label: 'for Windows', file: 'installer', install: null },
+  dmg: { anchor: 'macos', label: 'for macOS', file: 'disk image', install: null },
+};
+
+/** Fills Get Soundfolk for the visitor's system (§5.3): the section on every page, and the
+ *  home's Download button. The latest release is written by the site's build in /release.json:
+ *  the page asks nothing of GitHub's API. */
+export async function setUpGet() {
+  const kind = system();
+  let release = null;
+  if (kind && kind !== 'mobile') {
+    try {
+      const response = await fetch('/release.json', { signal: AbortSignal.timeout(5000) });
+      if (response.ok) release = await response.json();
+    } catch {
+      // The links to the download page are enough.
+    }
+  }
+  const asset = release?.[kind];
+  const wanted = PACKAGE[kind];
+
+  const primary = $('get-primary');
+  const detail = $('get-detail');
+  if (primary && wanted) {
+    primary.textContent = `Download ${wanted.label}`;
+    if (asset) primary.href = asset.url;
+    if (detail && release)
+      detail.textContent = `Version ${release.version}, ${wanted.file}. Free software, under the MPL-2.0.`;
+  } else if (detail && kind === 'mobile') {
+    detail.textContent = 'Soundfolk runs on computers for now; apps for phones are to come.';
+  }
+
+  const box = $('get-body');
+  if (!box) return;
+  if (!wanted) {
     box.replaceChildren(
       el(
         'p',
         {},
-        mobile
-          ? 'Soundfolk runs on Linux computers for now, with apps for phones to come.'
-          : 'Soundfolk runs on Linux for now; Windows and macOS are to come.',
+        kind === 'mobile'
+          ? 'Soundfolk runs on Linux, Windows and macOS computers for now, with apps for phones to come.'
+          : 'Soundfolk runs on Linux, Windows and macOS.',
       ),
       el(
         'p',
         { class: 'muted' },
-        'Listen here in the meantime, or send the link to your Linux computer.',
+        'Listen here in the meantime, or send the link to your computer.',
       ),
-      el('p', {}, el('a', { href: RELEASES }, 'All downloads')),
+      el('p', {}, el('a', { href: '/download/' }, 'All downloads')),
     );
     return;
   }
-  let release = null;
-  try {
-    const response = await fetch('/release.json', { signal: AbortSignal.timeout(5000) });
-    if (response.ok) release = await response.json();
-  } catch {
-    // The link to the releases is enough.
-  }
-  const deb = release?.deb;
   box.replaceChildren(
-    el('p', {}, 'Free software for Linux. For Debian, Ubuntu, Linux Mint and their derivatives:'),
+    el('p', {}, `Free software ${wanted.label}, without ads or tracking.`),
     el(
       'div',
       { class: 'actions' },
       el(
         'a',
-        { class: 'button primary', href: deb?.url ?? RELEASES },
-        deb ? `Download Soundfolk ${release.version} (.deb)` : 'Download Soundfolk (.deb)',
+        { class: 'button primary', href: asset?.url ?? `/download/#${wanted.anchor}` },
+        release ? `Download Soundfolk ${release.version} (${wanted.file})` : `Download Soundfolk`,
       ),
     ),
+    wanted.install
+      ? el(
+          'p',
+          { class: 'muted small' },
+          wanted.install,
+          el('code', {}, `sudo apt install ./${asset?.name ?? 'Soundfolk_*_amd64.deb'}`),
+        )
+      : null,
     el(
       'p',
       { class: 'muted small' },
-      'Then open the file, or install it from a terminal: ',
-      el('code', {}, `sudo apt install ./${deb?.name ?? 'Soundfolk_*_amd64.deb'}`),
-    ),
-    el(
-      'p',
-      { class: 'muted small' },
-      'Every build is signed by GitHub: ',
-      el('code', {}, 'gh attestation verify <file> -R getsoundfolk/soundfolk'),
-      '. ',
-      el('a', { href: RELEASES }, 'All downloads'),
+      el('a', { href: `/download/#${wanted.anchor}` }, 'Installing'),
+      ' · ',
+      el('a', { href: '/download/' }, 'Other systems'),
     ),
   );
 }
