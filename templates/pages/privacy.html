@@ -1,0 +1,99 @@
+      <section class="page-head" aria-labelledby="title">
+        <h1 id="title">Privacy</h1>
+        <p class="lead">
+          Soundfolk has no account and no server of its own. What you listen to, like and keep
+          stays in a database on your computer. Here is everything the app sends, to whom, and how
+          to turn it off.
+        </p>
+      </section>
+
+      <section class="card prose" aria-labelledby="always-title">
+        <h2 id="always-title">What any radio app sends</h2>
+        <dl class="facts">
+          <dt>The station’s stream</dt>
+          <dd>
+            To play a station, Soundfolk connects to its streaming server, which sees your IP
+            address, like any radio player.
+          </dd>
+          <dt>Searches, to Radio-Browser</dt>
+          <dd>
+            The catalog is the open <a href="https://www.radio-browser.info">Radio-Browser</a>
+            service, searched online: what you type in Discover is sent to it.
+          </dd>
+          <dt>Station logos</dt>
+          <dd>Loaded from the address the catalog gives, usually the station’s own website.</dd>
+        </dl>
+      </section>
+
+      <section class="card prose" aria-labelledby="settings-title">
+        <h2 id="settings-title">What you can turn off</h2>
+        <p class="muted">In Soundfolk’s settings, under Privacy and Cover art.</p>
+        <dl class="facts">
+          <dt>Report my listens to Radio-Browser <span class="tag">On</span></dt>
+          <dd>
+            Each catalog station you start is counted in Radio-Browser’s popularity ranking, which
+            helps small radios get found. Sent: the station’s id and, as with any request, your IP
+            address. A notice comes with your first play, which is not counted. Stations you added
+            yourself are never reported.
+          </dd>
+          <dt>Find the track on air on the station’s website <span class="tag">On</span></dt>
+          <dd>
+            For streams that don’t announce their tracks, Soundfolk reads the station’s web page or
+            its streaming server’s status, only while you listen to it. That site sees your IP
+            address. The list of recipes saying where to look is downloaded from this site once a
+            day.
+          </dd>
+          <dt>Tell me when a new version is out <span class="tag">On</span></dt>
+          <dd>
+            Once a day, Soundfolk asks GitHub for the latest version number (GitHub sees your IP
+            address). Nothing is downloaded or installed.
+          </dd>
+          <dt>Covers from Deezer, iTunes or the Cover Art Archive <span class="tag off">Off</span></dt>
+          <dd>
+            When you turn one on, the artist and title of each track on air are looked up there to
+            show its album cover. By default, only the cover the station itself gives is shown.
+          </dd>
+          <dt>Identify my liked tracks on MusicBrainz <span class="tag off">Off</span></dt>
+          <dd>
+            When on, the artist and title of the tracks you like, never the rest of your history,
+            are looked up in the open MusicBrainz database, for the artist, album, genre, decade and
+            country stats.
+          </dd>
+        </dl>
+      </section>
+
+      <section class="card prose" aria-labelledby="shared-title">
+        <h2 id="shared-title">Shared data, downloaded</h2>
+        <p>
+          Once a day, Soundfolk downloads from this site the lists curated by listeners, the
+          stations’ donation links and the title recipes. The same files for everyone: they say
+          nothing about you.
+        </p>
+      </section>
+
+      <section class="card prose" aria-labelledby="links-title">
+        <h2 id="links-title">Links you share</h2>
+        <p>
+          A link to a station or a list carries what it shows after the <code>#</code> of its
+          address: the station, the track on air, and your name only if you typed one in the
+          settings. That part of an address is never sent to a server: this site never sees what
+          is shared. The page asks Radio-Browser for the station, from your friend’s browser.
+        </p>
+      </section>
+
+      <section class="card prose" aria-labelledby="site-title">
+        <h2 id="site-title">This website</h2>
+        <p>
+          Plain pages hosted by GitHub Pages, which sees your IP address like any web host. No
+          cookies, no analytics, no third-party scripts. A page plays a station only when you click
+          Listen.
+        </p>
+      </section>
+
+      <p class="muted small center">
+        Details, for the curious:
+        <a href="https://github.com/getsoundfolk/soundfolk#privacy">the app’s README</a> ·
+        <a href="https://github.com/getsoundfolk/soundfolk/blob/main/docs/05-features.md#4--privacy"
+          >the feature specs</a
+        >
+      </p>

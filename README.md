@@ -6,7 +6,10 @@ getting the app. The design is in the app's repository,
 
 | Address | What |
 |---|---|
-| `/` | Home: what Soundfolk is, Get Soundfolk, the published lists |
+| `/` | Home: what Soundfolk does, with screenshots of the app, Get Soundfolk, the published lists |
+| `/download/` | The packages of the latest release, for each system, and how to install them |
+| `/privacy/` | What the app sends, to whom, and how to turn it off |
+| `/contribute/` | Recipes, donation links, lists, code |
 | `/s/#…` | A station shared from the app: listen in the page, Open in Soundfolk |
 | `/l/<id>/` | A list published in [soundfolk-stations](https://github.com/getsoundfolk/soundfolk-stations), with its stations written in (and a preview image for chat apps) |
 | `/l/#…` | A listener's own list, or a published list newer than the last build |
@@ -32,11 +35,17 @@ python3 -m http.server -d _site
 node --test scripts/test_link.mjs
 ```
 
-`site/` is copied as it is; `scripts/build.py` writes the pages from `templates/base.html`, a page
-per published list, the preview images and `release.json`. The Pages workflow builds and publishes
-on every push to `main`, every day and by hand. It writes nothing to the repository: the ids of the
+`site/` is copied as it is; `scripts/build.py` writes the pages from `templates/base.html` and
+`templates/pages/`, a page per published list, the preview images and `release.json`. The Pages
+workflow builds and publishes on every push to `main`, every day and by hand. It writes nothing to the repository: the ids of the
 lists ever built (to keep a page for removed ones) are published in `/lists-seen.txt` and read back
 by the next build.
+
+## Screenshots
+
+`site/assets/shots/<name>-dark.webp` and `<name>-light.webp`, of the same size: the page shows the
+one matching the visitor's theme. Take them from a Soundfolk with its own data folders (not your
+own history), at a scale of 2, and keep what the app shows true to the current version.
 
 ## License
 

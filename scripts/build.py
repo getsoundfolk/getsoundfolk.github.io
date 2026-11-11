@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: MPL-2.0
 """Builds the site into a folder (soundfolk docs/16-sharing.md §5).
 
-* The pages: home, /s/ (a station), /l/ (a list read from the link), 404.
+* The pages: home, /download/, /privacy/, /contribute/, /s/ (a station), /l/ (a list read from
+  the link), 404. The presentation pages are written from templates/pages/.
 * A page per list published in soundfolk-stations, /l/<id>/, with its stations' names and streams
   from Radio-Browser written in, so that it shows without a request and previews well in chat
   apps (§5.4). A list removed since keeps a page saying so: the ids ever built are kept in
@@ -43,7 +44,14 @@ MIRRORS = [
 USER_AGENT = "SoundfolkSite/1 (+https://github.com/getsoundfolk/getsoundfolk.github.io)"
 LIST_ID = re.compile(r"^[a-z0-9-]{1,64}$")
 UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
-TAGLINE = "Web radios from around the world, in a free app for Linux."
+TAGLINE = "Web radios from around the world, in a free app for Linux, Windows and macOS."
+# The packages of a release, by the end of their file name.
+PACKAGES = {
+    "deb": "_amd64.deb",
+    "appimage": "_amd64.AppImage",
+    "exe": "_x64-setup.exe",
+    "dmg": "_universal.dmg",
+}
 
 e = html.escape
 
@@ -77,12 +85,16 @@ def latest_release() -> dict | None:
     if token := os.environ.get("GITHUB_TOKEN"):
         headers["Authorization"] = f"Bearer {token}"
     release = get_json(f"https://api.github.com/repos/{APP_REPO}/releases/latest", headers)
-    deb = next((a for a in release.get("assets", []) if a["name"].endswith("_amd64.deb")), None)
-    return {
+    found: dict = {
         "version": release["tag_name"].removeprefix("v"),
         "url": release["html_url"],
-        "deb": {"name": deb["name"], "url": deb["browser_download_url"]} if deb else None,
     }
+    for kind, ending in PACKAGES.items():
+        asset = next((a for a in release.get("assets", []) if a["name"].endswith(ending)), None)
+        found[kind] = (
+            {"name": asset["name"], "url": asset["browser_download_url"]} if asset else None
+        )
+    return found
 
 
 # ── Stations ─────────────────────────────────────────────────────────────────
@@ -169,7 +181,10 @@ def page(
     og_image: str = f"{SITE}/assets/preview.png",
     canonical: str | None = None,
     body_attrs: str = "",
+    wide: bool = False,
 ) -> str:
+    if wide:
+        body_attrs += ' class="wide"'
     return BASE.substitute(
         title=e(title),
         og_title=e(og_title or title),
@@ -182,6 +197,27 @@ def page(
     )
 
 
+PAGES = ROOT / "templates" / "pages"
+SHOTS = ROOT / "site" / "assets" / "shots"
+
+
+def from_template(name: str, **values: str) -> str:
+    return Template((PAGES / f"{name}.html").read_text(encoding="utf-8")).substitute(values)
+
+
+def shot(name: str, alt: str, kind: str = "shot") -> str:
+    """A screenshot of the app, dark or light like the visitor's system: shots/<name>-dark.webp
+    and shots/<name>-light.webp, of the same size."""
+    from PIL import Image
+
+    with Image.open(SHOTS / f"{name}-dark.webp") as image:
+        width, height = image.size
+    return f"""<picture class="{kind}">
+          <source srcset="/assets/shots/{name}-light.webp" media="(prefers-color-scheme: light)" />
+          <img src="/assets/shots/{name}-dark.webp" alt="{e(alt)}" width="{width}" height="{height}" loading="lazy" decoding="async" />
+        </picture>"""
+
+
 def home(lists: list[dict]) -> str:
     items = "\n".join(
         f'          <li><span class="name"><a href="/l/{e(l["id"])}/">{e(l["title"])}</a></span>'
@@ -190,33 +226,80 @@ def home(lists: list[dict]) -> str:
     )
     lists_section = (
         f"""
-      <section class="card get" id="lists" aria-labelledby="lists-title">
-        <h2 id="lists-title">Lists</h2>
+      <section class="card" id="lists" aria-labelledby="lists-title">
+        <h2 id="lists-title">Lists by listeners</h2>
         <p class="muted">Stations chosen by listeners, for a mood or a moment.</p>
         <ul class="stations">
 {items}
         </ul>
-      </section>"""
+        <p class="note"><a href="/contribute/#lists">Make your own list</a></p>
+      </section>
+"""
         if lists
         else ""
     )
-    main = f"""\
-      <section class="card" aria-labelledby="title">
-        <h1 id="title">Web radios from around the world</h1>
-        <p class="description">
-          Soundfolk plays the tens of thousands of stations of Radio-Browser, shows what is on air,
-          and keeps your favorites. No account, no ads, no tracking: what you listen to stays on
-          your computer.
-        </p>
-        <p class="note">Received a link? Open it, and it shows the station or the list.</p>
-      </section>
-{GET}{lists_section}"""
+    main = from_template(
+        "home",
+        shot_player=shot(
+            "player",
+            "Soundfolk playing a station, with the title on air and a list of favorite stations",
+            "shot hero-shot",
+        ),
+        shot_discover=shot("discover", "Searching the catalog for stations"),
+        shot_sheet=shot("sheet", "A station's details: where its title comes from, its stream"),
+        shot_history=shot("history", "The listening history, by day, with liked tracks"),
+        lists=lists_section,
+    ).replace(' loading="lazy"', "", 1)  # the first screenshot is above the fold
     return page(
-        title="Soundfolk · Web radios from around the world",
+        title="Soundfolk · Find and play any web radio",
         main=main,
         script="home.js",
         og_title="Soundfolk",
+        description="Find and play any web radio. Know what’s playing, keep track of what you "
+        "heard. Free, for Linux, Windows and macOS.",
         canonical=f"{SITE}/",
+        wide=True,
+    )
+
+
+def download_page(release: dict | None) -> str:
+    release = release or {}
+    values = {"release_url": release.get("url", RELEASES)}
+    for kind, ending in PACKAGES.items():
+        asset = release.get(kind) or {"name": f"Soundfolk_*{ending}", "url": RELEASES}
+        values[f"{kind}_url"] = e(asset["url"])
+        values[f"{kind}_name"] = e(asset["name"])
+    version = release.get("version")
+    values["version_line"] = f"Version {e(version)}." if version else ""
+    return page(
+        title="Download · Soundfolk",
+        main=from_template("download", **values),
+        script=None,
+        description="Soundfolk for Debian, Ubuntu and other Linux distributions, Windows and macOS.",
+        canonical=f"{SITE}/download/",
+        wide=True,
+    )
+
+
+def privacy_page() -> str:
+    return page(
+        title="Privacy · Soundfolk",
+        main=from_template("privacy"),
+        script=None,
+        description="Everything Soundfolk sends, to whom, and how to turn it off.",
+        canonical=f"{SITE}/privacy/",
+        wide=True,
+    )
+
+
+def contribute_page() -> str:
+    return page(
+        title="Contribute · Soundfolk",
+        main=from_template("contribute"),
+        script=None,
+        description="Give titles to a station, add donation links, put together a list, or code.",
+        canonical=f"{SITE}/contribute/",
+        wide=True,
     )
 
 
@@ -522,6 +605,7 @@ def main() -> None:
     shutil.copytree(ROOT / "site", out)
 
     lists: list[dict] = []
+    release = None
     if not args.offline:
         lists = read_lists(args.lists)
         try:
@@ -533,6 +617,9 @@ def main() -> None:
             write(out, "release.json", json.dumps(release, indent=1) + "\n")
 
     write(out, "index.html", home(lists))
+    write(out, "download/index.html", download_page(release))
+    write(out, "privacy/index.html", privacy_page())
+    write(out, "contribute/index.html", contribute_page())
     write(out, "s/index.html", station_page())
     write(out, "l/index.html", list_link_page())
     write(out, "404.html", not_found_page())

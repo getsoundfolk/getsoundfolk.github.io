@@ -1,0 +1,105 @@
+      <section class="page-head" aria-labelledby="title">
+        <h1 id="title">Download Soundfolk</h1>
+        <p class="lead">
+          $version_line Free, for 64-bit Linux, Windows and macOS. Every package is built from the
+          public source by GitHub, and signed by it.
+        </p>
+      </section>
+
+      <section class="platforms" aria-label="Packages">
+        <article class="card platform" id="linux">
+          <h2>Debian, Ubuntu, Linux Mint</h2>
+          <p class="muted">Ubuntu 22.04 or later, Debian 12 or later, and their derivatives.</p>
+          <div class="actions">
+            <a class="button primary" href="$deb_url">Download the .deb</a>
+          </div>
+          <p class="small">Open the file to install it, or from a terminal:</p>
+          <pre><code>sudo apt install ./$deb_name</code></pre>
+        </article>
+
+        <article class="card platform" id="appimage">
+          <h2>Other Linux distributions</h2>
+          <p class="muted">Any distribution with glibc 2.35 or later.</p>
+          <div class="actions">
+            <a class="button primary" href="$appimage_url">Download the AppImage</a>
+          </div>
+          <pre><code>chmod +x $appimage_name
+./$appimage_name</code></pre>
+          <p class="small muted">
+            It needs FUSE 2 (<code>libfuse2</code>, or <code>libfuse2t64</code> on Ubuntu 24.04);
+            without it, add <code>--appimage-extract-and-run</code>.
+          </p>
+        </article>
+
+        <article class="card platform" id="windows">
+          <h2>Windows</h2>
+          <p class="muted">Windows 10 or later, 64-bit. No administrator rights needed.</p>
+          <div class="actions">
+            <a class="button primary" href="$exe_url">Download the installer</a>
+          </div>
+          <p class="small">
+            The installer is not code-signed yet, so SmartScreen warns before running it: click
+            <strong>More info</strong>, then <strong>Run anyway</strong>. It downloads Microsoft
+            WebView2 if Windows lacks it.
+          </p>
+        </article>
+
+        <article class="card platform" id="macos">
+          <h2>macOS</h2>
+          <p class="muted">macOS 10.13 or later, Apple silicon and Intel.</p>
+          <div class="actions">
+            <a class="button primary" href="$dmg_url">Download the disk image</a>
+          </div>
+          <p class="small">
+            Drag <strong>Soundfolk</strong> into <strong>Applications</strong>. The app is not
+            notarized by Apple yet: the first time, macOS refuses to open it. Go to
+            <strong>System Settings › Privacy &amp; Security</strong> and click
+            <strong>Open Anyway</strong>.
+          </p>
+        </article>
+      </section>
+
+      <section class="card prose" aria-labelledby="updates-title">
+        <h2 id="updates-title">Updates</h2>
+        <p>
+          Soundfolk checks once a day whether a new version is out, and says so in its settings. It
+          never downloads or installs anything by itself: you update the way you installed it.
+          Updates through Soundfolk’s own APT repository, with the system’s other updates, are
+          coming for the <code>.deb</code>.
+        </p>
+        <p>
+          Want the latest changes? A build of the main branch is published every night as the
+          <a href="https://github.com/getsoundfolk/soundfolk/releases/tag/nightly">nightly</a>
+          pre-release. It may break.
+        </p>
+      </section>
+
+      <section class="card prose" aria-labelledby="verify-title">
+        <h2 id="verify-title">Checking a package</h2>
+        <p>
+          Every package carries a GitHub attestation: proof that it was built by the project’s CI
+          from its public source. With the <a href="https://cli.github.com">GitHub CLI</a>:
+        </p>
+        <pre><code>gh attestation verify $deb_name -R getsoundfolk/soundfolk</code></pre>
+      </section>
+
+      <section class="card prose" aria-labelledby="source-title">
+        <h2 id="source-title">Building from source</h2>
+        <p>
+          Soundfolk is a Tauri 2 app: a Rust audio engine and a Svelte interface. You need Rust and
+          Node.js; on Linux, the WebKitGTK and ALSA development packages.
+        </p>
+        <pre><code>git clone https://github.com/getsoundfolk/soundfolk
+cd soundfolk
+npm install
+npm run tauri dev</code></pre>
+        <p>
+          The <a href="https://github.com/getsoundfolk/soundfolk#build-from-source">README</a> lists
+          the packages for each system.
+        </p>
+      </section>
+
+      <p class="muted small center">
+        <a href="$release_url">Release notes and every file</a> ·
+        <a href="https://github.com/getsoundfolk/soundfolk/releases">Older versions</a>
+      </p>
