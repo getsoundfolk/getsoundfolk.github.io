@@ -24,6 +24,7 @@ import os
 import re
 import shutil
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -36,11 +37,14 @@ SITE = "https://getsoundfolk.github.io"
 LISTS_URL = f"{SITE}/soundfolk-stations/v1/lists.json"
 APP_REPO = "getsoundfolk/soundfolk"
 RELEASES = f"https://github.com/{APP_REPO}/releases/latest"
+# These names all lead to one server today: a mirror is no fallback when that server stalls, so
+# the rounds below wait and ask again (RETRY_WAITS, in seconds, before the 2nd and 3rd rounds).
 MIRRORS = [
     "https://all.api.radio-browser.info",
     "https://de1.api.radio-browser.info",
     "https://de2.api.radio-browser.info",
 ]
+RETRY_WAITS = [15, 45]
 USER_AGENT = "SoundfolkSite/1 (+https://github.com/getsoundfolk/getsoundfolk.github.io)"
 LIST_ID = re.compile(r"^[a-z0-9-]{1,64}$")
 UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
@@ -66,18 +70,30 @@ def get_json(url: str, headers: dict[str, str] | None = None, timeout: float = 2
 
 
 def stations_by_uuid(uuids: list[str]) -> dict[str, dict]:
-    """Radio-Browser's stations for these UUIDs, by UUID; raises when no mirror answers."""
+    """Radio-Browser's stations for these UUIDs, by UUID; raises when no mirror answers in any
+    round."""
     if not uuids:
         return {}
     query = "/json/stations/byuuid?" + urllib.parse.urlencode({"uuids": ",".join(uuids)})
     errors: list[str] = []
-    for mirror in MIRRORS:
-        try:
-            found = get_json(mirror + query)
-            return {str(s.get("stationuuid", "")).lower(): s for s in found}
-        except Exception as exc:  # noqa: BLE001 - the next mirror is tried
-            errors.append(f"{mirror}: {exc}")
+    for wait in [0, *RETRY_WAITS]:
+        if wait:
+            print(f"Radio-Browser does not answer, asking again in {wait} s", file=sys.stderr)
+            time.sleep(wait)
+        for mirror in MIRRORS:
+            try:
+                found = get_json(mirror + query)
+                return {str(s.get("stationuuid", "")).lower(): s for s in found}
+            except Exception as exc:  # noqa: BLE001 - the next mirror is tried
+                errors.append(f"{mirror}: {exc}")
     raise RuntimeError("Radio-Browser does not answer:\n  " + "\n  ".join(errors))
+
+
+def published_page(path: str) -> str:
+    """The page the site publishes now at this path, to keep it when it cannot be rebuilt."""
+    request = urllib.request.Request(f"{SITE}/{path}", headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(request, timeout=20) as response:
+        return response.read().decode("utf-8")
 
 
 def latest_release() -> dict | None:
@@ -630,15 +646,28 @@ def main() -> None:
     )
 
     for lst in lists:
-        stations = stations_by_uuid([i["uuid"].lower() for i in lst["items"]])
-        write(out, f"l/{lst['id']}/index.html", published_list_page(lst, stations))
+        page = f"l/{lst['id']}/index.html"
+        try:
+            stations = stations_by_uuid([i["uuid"].lower() for i in lst["items"]])
+        except RuntimeError as exc:
+            # Radio-Browser down should not hold back the rest of the site (a new release on
+            # /download/, say): the list keeps the page published by the last build. A list
+            # never built has none, and the build stops.
+            print(f"list {lst['id']}: {exc}", file=sys.stderr)
+            try:
+                write(out, page, published_page(page))
+            except urllib.error.URLError as fallback:
+                raise RuntimeError(f"list {lst['id']}: no page published yet") from fallback
+            print(f"::warning::list {lst['id']}: Radio-Browser down, the published page is kept")
+        else:
+            write(out, page, published_list_page(lst, stations))
+            print(f"list {lst['id']}: {len(stations)} of {len(lst['items'])} stations")
         preview(
             out / "l" / lst["id"] / "preview.png",
             lst["title"],
             curators_text(lst.get("curators", [])) or lst.get("description", ""),
             kicker="Soundfolk · List",
         )
-        print(f"list {lst['id']}: {len(stations)} of {len(lst['items'])} stations")
 
     seen = read_seen(args.seen) if not args.offline else set()
     current = {lst["id"] for lst in lists}
