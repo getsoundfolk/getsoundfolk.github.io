@@ -66,7 +66,29 @@ jobs:
       id-token: write # prove to Pages where the build comes from
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deploy1.outputs.page_url || steps.deploy2.outputs.page_url || steps.deploy3.outputs.page_url }}
     steps:
-      - id: deployment
+      # Pages sometimes answers a deployment with a server error that is gone minutes later (run
+      # 45651066588: "Failed to create deployment (status: 500)", the build itself fine). So the
+      # deployment is tried up to three times, 1 then 5 minutes apart, from the same uploaded
+      # build. The last try has no continue-on-error: a lasting failure still fails the run.
+      - id: deploy1
+        continue-on-error: true
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+      - name: Wait before trying again
+        if: steps.deploy1.outcome == 'failure'
+        run: sleep 60
+
+      - id: deploy2
+        if: steps.deploy1.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+      - name: Wait before the last try
+        if: steps.deploy2.outcome == 'failure'
+        run: sleep 300
+
+      - id: deploy3
+        if: steps.deploy2.outcome == 'failure'
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
