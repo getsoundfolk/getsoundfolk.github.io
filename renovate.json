@@ -4,6 +4,12 @@
   "commitMessagePrefix": "Pages:",
   "packageRules": [
     {
+      "description": "Every action update in one PR, majors included (a group otherwise splits them off): this repository has nothing else to update, so one review covers it",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "separateMajorMinor": false
+    },
+    {
       "description": "No automerge: the publish and deploy-pages jobs run only once merged on main, so a broken action update would still pass the pull request's checks. A rule, not a top-level option, which the preset's rules would override.",
       "matchPackageNames": ["*"],
       "automerge": false
