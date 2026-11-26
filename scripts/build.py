@@ -645,14 +645,20 @@ def main() -> None:
         "Free, without ads or tracking",
     )
 
+    # Set once Radio-Browser has failed all its rounds: the next lists keep their published page
+    # at once rather than wait through the same rounds again.
+    radio_browser_down = False
     for lst in lists:
         page = f"l/{lst['id']}/index.html"
         try:
+            if radio_browser_down:
+                raise RuntimeError("Radio-Browser did not answer for an earlier list")
             stations = stations_by_uuid([i["uuid"].lower() for i in lst["items"]])
         except RuntimeError as exc:
             # Radio-Browser down should not hold back the rest of the site (a new release on
             # /download/, say): the list keeps the page published by the last build. A list
             # never built has none, and the build stops.
+            radio_browser_down = True
             print(f"list {lst['id']}: {exc}", file=sys.stderr)
             try:
                 write(out, page, published_page(page))
