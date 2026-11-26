@@ -1,0 +1,12 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>getsoundfolk/.github:renovate-config"],
+  "commitMessagePrefix": "Pages:",
+  "packageRules": [
+    {
+      "description": "No automerge: the publish and deploy-pages jobs run only once merged on main, so a broken action update would still pass the pull request's checks. A rule, not a top-level option, which the preset's rules would override.",
+      "matchPackageNames": ["*"],
+      "automerge": false
+    }
+  ]
+}
