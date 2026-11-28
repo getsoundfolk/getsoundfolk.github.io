@@ -1,3 +1,5 @@
 _site/
 __pycache__/
 node_modules/
+CLAUDE.local.md
+.claude/settings.local.json
